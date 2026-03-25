@@ -1,0 +1,736 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>🐱 Purrfect Random Numbers</title>
+
+    <!--
+      Single-file site:
+      - No frameworks, no external CSS/JS, no CDNs
+      - Times New Roman system font throughout
+      - Cat-themed decorations using Unicode + CSS
+    -->
+
+    <!-- Emoji favicon via inline SVG data URI (works in modern browsers). -->
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ctext y='52' font-size='52'%3E%F0%9F%90%B1%3C/text%3E%3C/svg%3E"
+    />
+
+    <style>
+      :root {
+        --bg: #ffffff;
+        --ink: #000000;
+        --accent: #4169e1; /* medium blue */
+        --accent-strong: #2f55d4;
+        --muted: #4b5563;
+        --error: #b00020;
+        --card: #ffffff;
+        --border: rgba(0, 0, 0, 0.14);
+        --shadow: 0 16px 40px rgba(0, 0, 0, 0.10);
+        --radius: 14px;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        height: 100%;
+      }
+
+      body {
+        margin: 0;
+        font-family: "Times New Roman", Times, serif;
+        color: var(--ink);
+        background: var(--bg);
+        line-height: 1.35;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+      }
+
+      /* Subtle paw-print-ish pattern (kept extremely faint for readability). */
+      body::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        opacity: 0.06;
+        background:
+          radial-gradient(circle at 22px 22px, rgba(65, 105, 225, 0.45) 0 2px, transparent 3px),
+          radial-gradient(circle at 14px 14px, rgba(65, 105, 225, 0.45) 0 1.5px, transparent 2.5px),
+          radial-gradient(circle at 30px 14px, rgba(65, 105, 225, 0.45) 0 1.5px, transparent 2.5px),
+          radial-gradient(circle at 14px 30px, rgba(65, 105, 225, 0.45) 0 1.5px, transparent 2.5px),
+          radial-gradient(circle at 30px 30px, rgba(65, 105, 225, 0.45) 0 1.5px, transparent 2.5px);
+        background-size: 56px 56px;
+        background-position: 0 0;
+      }
+
+      .page {
+        min-height: 100%;
+        display: flex;
+        flex-direction: column;
+      }
+
+      header {
+        padding: clamp(18px, 4vw, 34px) 16px 10px;
+        text-align: center;
+        position: relative;
+      }
+
+      .title {
+        margin: 0;
+        font-size: clamp(30px, 5vw, 52px);
+        font-weight: 700;
+        letter-spacing: 0.2px;
+      }
+
+      .subtitle {
+        margin: 8px auto 0;
+        max-width: 52ch;
+        color: var(--muted);
+        font-size: clamp(15px, 2.2vw, 18px);
+      }
+
+      .cats-top {
+        margin: 10px auto 0;
+        display: flex;
+        justify-content: center;
+        gap: 10px;
+        flex-wrap: wrap;
+        color: var(--accent);
+        user-select: none;
+      }
+
+      .cat-chip {
+        border: 1px dashed rgba(65, 105, 225, 0.45);
+        padding: 6px 10px;
+        border-radius: 999px;
+        font-size: 16px;
+        background: rgba(65, 105, 225, 0.04);
+      }
+
+      main {
+        flex: 1;
+        display: grid;
+        place-items: center;
+        padding: 18px 16px 26px;
+      }
+
+      .card {
+        width: min(720px, 100%);
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+        padding: clamp(16px, 3vw, 26px);
+        position: relative;
+        overflow: hidden;
+      }
+
+      /* Decorative cats around the card (purely visual). */
+      .card::before,
+      .card::after {
+        content: "ฅ^•ﻌ•^ฅ";
+        position: absolute;
+        color: rgba(65, 105, 225, 0.22);
+        font-size: 18px;
+        user-select: none;
+        pointer-events: none;
+      }
+      .card::before {
+        top: 12px;
+        left: 14px;
+        transform: rotate(-7deg);
+      }
+      .card::after {
+        bottom: 12px;
+        right: 14px;
+        transform: rotate(8deg);
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 14px;
+        margin-top: 12px;
+      }
+
+      @media (max-width: 560px) {
+        .grid {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      label {
+        display: block;
+        font-weight: 700;
+        margin-bottom: 6px;
+      }
+
+      .field {
+        display: flex;
+        flex-direction: column;
+      }
+
+      input[type="number"] {
+        appearance: textfield;
+        width: 100%;
+        padding: 12px 12px;
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        font-family: inherit;
+        font-size: 18px;
+        background: #fff;
+        color: var(--ink);
+        outline: none;
+        transition: box-shadow 160ms ease, border-color 160ms ease;
+      }
+
+      input[type="number"]:focus {
+        border-color: rgba(65, 105, 225, 0.75);
+        box-shadow: 0 0 0 4px rgba(65, 105, 225, 0.18);
+      }
+
+      .buttons {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        align-items: center;
+        margin-top: 16px;
+      }
+
+      button {
+        border: 1px solid transparent;
+        border-radius: 12px;
+        padding: 12px 14px;
+        font-family: inherit;
+        font-size: 18px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: transform 120ms ease, box-shadow 160ms ease, background 160ms ease,
+          border-color 160ms ease, opacity 160ms ease;
+      }
+
+      button:focus-visible {
+        outline: none;
+        box-shadow: 0 0 0 4px rgba(65, 105, 225, 0.24);
+      }
+
+      .btn-primary {
+        background: var(--accent);
+        color: #fff;
+      }
+      .btn-primary:hover {
+        background: var(--accent-strong);
+      }
+      .btn-primary:active {
+        transform: translateY(1px);
+      }
+
+      .btn-secondary {
+        background: #fff;
+        color: var(--accent);
+        border-color: rgba(65, 105, 225, 0.55);
+      }
+      .btn-secondary:hover {
+        background: rgba(65, 105, 225, 0.06);
+      }
+      .btn-secondary:active {
+        transform: translateY(1px);
+      }
+
+      .btn-muted {
+        background: #fff;
+        color: #111;
+        border-color: rgba(0, 0, 0, 0.18);
+      }
+      .btn-muted:hover {
+        background: rgba(0, 0, 0, 0.04);
+      }
+
+      .btn-primary[disabled],
+      .btn-secondary[disabled],
+      .btn-muted[disabled] {
+        opacity: 0.55;
+        cursor: not-allowed;
+      }
+
+      .result-wrap {
+        margin-top: 16px;
+        border-top: 1px solid rgba(0, 0, 0, 0.08);
+        padding-top: 16px;
+      }
+
+      .result-row {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 12px;
+        align-items: center;
+      }
+
+      .result {
+        min-height: 92px; /* keep layout stable */
+        display: flex;
+        align-items: baseline;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
+
+      .big-number {
+        font-size: clamp(80px, 11vw, 112px);
+        font-weight: 800;
+        letter-spacing: 0.2px;
+        line-height: 1;
+        color: #000;
+        opacity: 0;
+        transform: translateY(6px) scale(0.985);
+        transition: opacity 260ms ease, transform 260ms ease;
+      }
+
+      .big-number.show {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+
+      .cat-beside {
+        font-size: 26px;
+        color: rgba(65, 105, 225, 0.9);
+        user-select: none;
+      }
+
+      .hint {
+        margin: 6px 0 0;
+        color: var(--muted);
+        font-size: 15px;
+      }
+
+      .message {
+        margin-top: 10px;
+        padding: 10px 12px;
+        border-radius: 12px;
+        border: 1px solid rgba(0, 0, 0, 0.12);
+        background: rgba(0, 0, 0, 0.03);
+        font-size: 16px;
+      }
+
+      .message.error {
+        border-color: rgba(176, 0, 32, 0.35);
+        background: rgba(176, 0, 32, 0.07);
+        color: #5a0012;
+      }
+
+      .message.success {
+        border-color: rgba(65, 105, 225, 0.35);
+        background: rgba(65, 105, 225, 0.07);
+      }
+
+      .history {
+        margin-top: 14px;
+        border-top: 1px dashed rgba(0, 0, 0, 0.14);
+        padding-top: 12px;
+      }
+
+      .history-title {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
+
+      .history-title h2 {
+        margin: 0;
+        font-size: 18px;
+      }
+
+      .history small {
+        color: var(--muted);
+      }
+
+      .history-list {
+        margin: 10px 0 0;
+        padding: 0;
+        list-style: none;
+        display: grid;
+        gap: 8px;
+      }
+
+      .history-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 10px 12px;
+        border: 1px solid rgba(0, 0, 0, 0.10);
+        border-radius: 12px;
+        background: #fff;
+      }
+
+      .history-left {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        min-width: 0;
+      }
+
+      .tiny-cat {
+        color: rgba(65, 105, 225, 0.95);
+        flex: 0 0 auto;
+      }
+
+      .history-number {
+        font-weight: 800;
+        font-size: 18px;
+      }
+
+      .history-meta {
+        color: var(--muted);
+        font-size: 13px;
+        white-space: nowrap;
+        flex: 0 0 auto;
+      }
+
+      footer {
+        padding: 14px 16px 18px;
+        text-align: center;
+        color: var(--muted);
+      }
+
+      .footer-cats {
+        margin-bottom: 8px;
+        color: rgba(65, 105, 225, 0.85);
+        user-select: none;
+      }
+
+      /* Screen-reader-only helper */
+      .sr-only {
+        position: absolute !important;
+        width: 1px !important;
+        height: 1px !important;
+        padding: 0 !important;
+        margin: -1px !important;
+        overflow: hidden !important;
+        clip: rect(0, 0, 0, 0) !important;
+        white-space: nowrap !important;
+        border: 0 !important;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="page">
+      <header>
+        <h1 class="title">🐱 Purrfect Random Numbers</h1>
+        <p class="subtitle">
+          Pick a min and max, then generate a number faster than a cat can knock a glass off the
+          table.
+        </p>
+        <div class="cats-top" aria-hidden="true">
+          <span class="cat-chip">=^.^=</span>
+          <span class="cat-chip">ฅ^•ﻌ•^ฅ</span>
+          <span class="cat-chip">(=ↀωↀ=)</span>
+          <span class="cat-chip">=^._.^=</span>
+        </div>
+      </header>
+
+      <main>
+        <section class="card" aria-label="Random number generator">
+          <div class="grid">
+            <div class="field">
+              <label for="minInput">Minimum</label>
+              <input
+                id="minInput"
+                name="min"
+                type="number"
+                inputmode="numeric"
+                placeholder="e.g. 1"
+                aria-label="Minimum number"
+                autocomplete="off"
+              />
+            </div>
+            <div class="field">
+              <label for="maxInput">Maximum</label>
+              <input
+                id="maxInput"
+                name="max"
+                type="number"
+                inputmode="numeric"
+                placeholder="e.g. 100"
+                aria-label="Maximum number"
+                autocomplete="off"
+              />
+            </div>
+          </div>
+
+          <div class="buttons">
+            <button id="generateBtn" class="btn-primary" type="button" aria-label="Generate random number">
+              Generate
+            </button>
+            <button
+              id="copyBtn"
+              class="btn-secondary"
+              type="button"
+              aria-label="Copy result to clipboard"
+              hidden
+            >
+              Copy to Clipboard
+            </button>
+            <button
+              id="clearBtn"
+              class="btn-muted"
+              type="button"
+              aria-label="Clear history"
+              disabled
+            >
+              Clear History
+            </button>
+          </div>
+
+          <p class="hint">
+            Tip: Press <strong>Enter</strong> to generate. Tab through inputs and buttons as usual.
+          </p>
+
+          <!-- Status + error messaging (aria-live so screen readers announce changes). -->
+          <div id="message" class="message" role="status" aria-live="polite">
+            Enter a min and max, then press Generate.
+          </div>
+
+          <div class="result-wrap" aria-label="Result area">
+            <div class="result-row">
+              <div class="result" aria-live="polite" aria-atomic="true">
+                <span class="cat-beside" aria-hidden="true">🐾</span>
+                <span id="resultNumber" class="big-number" aria-label="Generated number">—</span>
+                <span class="cat-beside" aria-hidden="true">🐾</span>
+              </div>
+              <div class="cat-beside" aria-hidden="true" title="Meow!">😺</div>
+            </div>
+
+            <div class="history" aria-label="History">
+              <div class="history-title">
+                <h2>Last 5 numbers</h2>
+                <small id="historyCount">0 saved</small>
+              </div>
+              <ol id="historyList" class="history-list" aria-label="Generated numbers history"></ol>
+            </div>
+          </div>
+        </section>
+      </main>
+
+      <footer>
+        <div class="footer-cats" aria-hidden="true">
+          ฅ^•ﻌ•^ฅ &nbsp; ( =ↀωↀ= ) &nbsp; =^._.^=
+        </div>
+        <div>🐱 Made with ❤️ and lots of cats</div>
+      </footer>
+    </div>
+
+    <script>
+      /*
+        Random Number Generator (single-file)
+        - Validates input
+        - Generates inclusive random integer within [min, max]
+        - Shows copy button only after generation
+        - Keeps last 5 results in a small history
+        - Enter key triggers generation
+      */
+
+      (function () {
+        const minInput = document.getElementById("minInput");
+        const maxInput = document.getElementById("maxInput");
+        const generateBtn = document.getElementById("generateBtn");
+        const copyBtn = document.getElementById("copyBtn");
+        const clearBtn = document.getElementById("clearBtn");
+        const resultNumber = document.getElementById("resultNumber");
+        const message = document.getElementById("message");
+        const historyList = document.getElementById("historyList");
+        const historyCount = document.getElementById("historyCount");
+
+        /** @type {{ value: number, at: number }[]} */
+        let history = [];
+
+        function setMessage(text, kind) {
+          message.textContent = text;
+          message.classList.remove("error", "success");
+          if (kind === "error") message.classList.add("error");
+          if (kind === "success") message.classList.add("success");
+        }
+
+        function parseInputs() {
+          const minRaw = minInput.value;
+          const maxRaw = maxInput.value;
+
+          if (minRaw.trim() === "" || maxRaw.trim() === "") {
+            return { ok: false, error: "Please enter both a minimum and a maximum number." };
+          }
+
+          const min = Number(minRaw);
+          const max = Number(maxRaw);
+
+          if (!Number.isFinite(min) || !Number.isFinite(max)) {
+            return { ok: false, error: "Those don’t look like valid numbers. Try again, human." };
+          }
+
+          // Keep things simple: integers only for a clean RNG utility.
+          if (!Number.isInteger(min) || !Number.isInteger(max)) {
+            return { ok: false, error: "Please use whole numbers (integers) for min and max." };
+          }
+
+          if (min > max) {
+            return { ok: false, error: "Oops — minimum can’t be greater than maximum." };
+          }
+
+          return { ok: true, min, max };
+        }
+
+        function randomIntInclusive(min, max) {
+          // Inclusive integer RNG: Math.random() in [0, 1), scaled to [min, max]
+          return Math.floor(Math.random() * (max - min + 1)) + min;
+        }
+
+        function formatTime(ts) {
+          try {
+            return new Date(ts).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+          } catch {
+            return "";
+          }
+        }
+
+        function renderHistory() {
+          historyList.innerHTML = "";
+
+          history.forEach((item, index) => {
+            const li = document.createElement("li");
+            li.className = "history-item";
+
+            const left = document.createElement("div");
+            left.className = "history-left";
+
+            const cat = document.createElement("span");
+            cat.className = "tiny-cat";
+            cat.setAttribute("aria-hidden", "true");
+            cat.textContent = index === 0 ? "😺" : "🐾";
+
+            const num = document.createElement("span");
+            num.className = "history-number";
+            num.textContent = String(item.value);
+
+            left.appendChild(cat);
+            left.appendChild(num);
+
+            const meta = document.createElement("span");
+            meta.className = "history-meta";
+            meta.textContent = formatTime(item.at);
+
+            li.appendChild(left);
+            li.appendChild(meta);
+            historyList.appendChild(li);
+          });
+
+          historyCount.textContent = `${history.length} saved`;
+          clearBtn.disabled = history.length === 0;
+        }
+
+        function showResult(value) {
+          resultNumber.textContent = String(value);
+          // Restart the animation each time (remove then re-add on next frame).
+          resultNumber.classList.remove("show");
+          requestAnimationFrame(() => resultNumber.classList.add("show"));
+        }
+
+        function generate() {
+          const parsed = parseInputs();
+          if (!parsed.ok) {
+            setMessage(parsed.error, "error");
+            return;
+          }
+
+          const value = randomIntInclusive(parsed.min, parsed.max);
+
+          showResult(value);
+          setMessage("Meow! New number generated.", "success");
+
+          // History: newest first, max 5 items
+          history.unshift({ value, at: Date.now() });
+          history = history.slice(0, 5);
+          renderHistory();
+
+          // Copy button only appears after we have a number
+          copyBtn.hidden = false;
+          copyBtn.disabled = false;
+        }
+
+        async function copyToClipboard() {
+          const text = resultNumber.textContent.trim();
+          if (!text || text === "—") return;
+
+          try {
+            await navigator.clipboard.writeText(text);
+            setMessage("Copied to clipboard. (Good kitty.)", "success");
+            copyBtn.textContent = "Copied!";
+            setTimeout(() => (copyBtn.textContent = "Copy to Clipboard"), 900);
+          } catch (err) {
+            // Fallback for older browsers / blocked clipboard access
+            try {
+              const ta = document.createElement("textarea");
+              ta.value = text;
+              ta.setAttribute("readonly", "true");
+              ta.style.position = "fixed";
+              ta.style.left = "-9999px";
+              document.body.appendChild(ta);
+              ta.select();
+              const ok = document.execCommand("copy");
+              document.body.removeChild(ta);
+              if (ok) {
+                setMessage("Copied to clipboard.", "success");
+                copyBtn.textContent = "Copied!";
+                setTimeout(() => (copyBtn.textContent = "Copy to Clipboard"), 900);
+              } else {
+                throw new Error("execCommand copy failed");
+              }
+            } catch {
+              setMessage(
+                "Couldn’t copy automatically in this browser. You can still select the number and copy it manually.",
+                "error"
+              );
+            }
+          }
+        }
+
+        function clearHistory() {
+          history = [];
+          renderHistory();
+          setMessage("History cleared. Fresh paws, fresh starts.", "success");
+        }
+
+        // Enter key triggers generation (anywhere on the page, but we keep it safe for buttons).
+        document.addEventListener("keydown", (e) => {
+          if (e.key !== "Enter") return;
+
+          const target = e.target;
+          const isTextEntry =
+            target === minInput ||
+            target === maxInput;
+
+          // If focused on inputs, we generate; if focused on a button, the button will handle itself.
+          if (isTextEntry) {
+            e.preventDefault();
+            generate();
+          }
+        });
+
+        generateBtn.addEventListener("click", generate);
+        copyBtn.addEventListener("click", copyToClipboard);
+        clearBtn.addEventListener("click", clearHistory);
+
+        // Helpful defaults for quick use
+        minInput.value = "1";
+        maxInput.value = "100";
+        renderHistory();
+      })();
+    </script>
+  </body>
+</html>
+
